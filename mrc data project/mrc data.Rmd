@@ -1,0 +1,894 @@
+---
+title: "mrc data"
+author: "tyler chiu"
+date: "4/9/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F)
+
+library(hablar)
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(lubridate)
+library(plotly)
+```
+# note: all colored graphs are interactive
+
+# data processing for annual holiday album ranked list 
+```{r, echo=T}
+
+#column_classes = c("numeric","factor","factor","factor","factor","Date","numeric","numeric","numeric","numeric","numeric","numeric")
+album_list_2015 = read.csv("/Users/tylerchiu/Downloads/mrc data project/Annual Holiday Albums - Ranked List 2015-2018/2015-Table 1.csv")
+album_list_2015 = album_list_2015[,c(1:12)] #extra column was deleted
+album_list_2016 = read.csv("/Users/tylerchiu/Downloads/mrc data project/Annual Holiday Albums - Ranked List 2015-2018/2016-Table 1.csv")
+album_list_2016 = album_list_2016[,c(1:12)] #extra column was deleted
+album_list_2017 = read.csv("/Users/tylerchiu/Downloads/mrc data project/Annual Holiday Albums - Ranked List 2015-2018/2017-Table 1.csv")
+album_list_2018 = read.csv("/Users/tylerchiu/Downloads/mrc data project/Annual Holiday Albums - Ranked List 2015-2018/2018-Table 1.csv")
+
+#convert columns to correct data types
+album_list_2015 = album_list_2015 %>% 
+  convert(num(Rank),fct(Title,Artist,Label,Core.Genre))
+
+album_list_2015 = album_list_2015 %>% mutate(Release.Date = as.Date(Release.Date,
+                                                  format = "%m/%d/%Y"))
+#use gsub to get rid of commas in numeric values 
+album_list_2015 = album_list_2015 %>% mutate(Albums.w.TEA.w.SEA.On.Demand.Audio...YTD = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand.Audio...YTD)),
+                                             Albums.Sales...YTD  = as.numeric(gsub(",", "",Albums.Sales...YTD)),
+                                             Physical.Albums.Sales...YTD  = as.numeric(gsub(",", "",Physical.Albums.Sales...YTD)),
+                                             Digital.Albums.Sales...YTD = as.numeric(gsub(",", "",Digital.Albums.Sales...YTD)),
+                                             Digital.Song.Sales...YTD = as.numeric(gsub(",", "",Digital.Song.Sales...YTD)),
+                                             Streaming.On.Demand.Audio...YTD = as.numeric(gsub(",", "",Streaming.On.Demand.Audio...YTD)),
+                                             holiday.year = rep(2015,dim(album_list_2015)[1]),
+                                             release.year = year(Release.Date)
+                                             )
+
+album_list_2016 = album_list_2016 %>% 
+  convert(num(Rank),fct(Title,Artist,Label,Core.Genre))
+
+album_list_2016 = album_list_2016 %>% mutate(Release.Date = as.Date(Release.Date,
+                                                  format = "%m/%d/%Y"))
+album_list_2016 = album_list_2016 %>% mutate(Albums.w.TEA.w.SEA.On.Demand.Audio...YTD = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand.Audio...YTD)),
+                                             Albums.Sales...YTD  = as.numeric(gsub(",", "",Albums.Sales...YTD)),
+                                             Physical.Albums.Sales...YTD  = as.numeric(gsub(",", "",Physical.Albums.Sales...YTD)),
+                                             Digital.Albums.Sales...YTD = as.numeric(gsub(",", "",Digital.Albums.Sales...YTD)),
+                                             Digital.Song.Sales...YTD = as.numeric(gsub(",", "",Digital.Song.Sales...YTD)),
+                                             Streaming.On.Demand.Audio...YTD = as.numeric(gsub(",", "",Streaming.On.Demand.Audio...YTD)),
+                                             holiday.year = rep(2016,dim(album_list_2016)[1]),
+                                             release.year = year(Release.Date)
+                                             )
+
+album_list_2017 = album_list_2017 %>% 
+  convert(num(Rank),fct(Title,Artist,Label,Core.Genre))
+
+album_list_2017 = album_list_2017 %>% mutate(Release.Date = as.Date(Release.Date,
+                                                  format = "%m/%d/%Y"))
+album_list_2017 = album_list_2017 %>% mutate(Albums.w.TEA.w.SEA.On.Demand.Audio...YTD = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand.Audio...YTD)),
+                                             Albums.Sales...YTD  = as.numeric(gsub(",", "",Albums.Sales...YTD)),
+                                             Physical.Albums.Sales...YTD  = as.numeric(gsub(",", "",Physical.Albums.Sales...YTD)),
+                                             Digital.Albums.Sales...YTD = as.numeric(gsub(",", "",Digital.Albums.Sales...YTD)),
+                                             Digital.Song.Sales...YTD = as.numeric(gsub(",", "",Digital.Song.Sales...YTD)),
+                                             Streaming.On.Demand.Audio...YTD = as.numeric(gsub(",", "",Streaming.On.Demand.Audio...YTD)),
+                                             holiday.year = rep(2017,dim(album_list_2017)[1]),
+                                             release.year = year(Release.Date)
+                                             )
+
+album_list_2018 = album_list_2018 %>% 
+  convert(num(Rank),fct(Title,Artist,Label,Core.Genre))
+
+album_list_2018 = album_list_2018 %>% mutate(Release.Date = as.Date(Release.Date,
+                                                  format = "%m/%d/%Y"))
+album_list_2018 = album_list_2018 %>% mutate(Albums.w.TEA.w.SEA.On.Demand.Audio...YTD = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand.Audio...YTD)),
+                                             Albums.Sales...YTD  = as.numeric(gsub(",", "",Albums.Sales...YTD)),
+                                             Physical.Albums.Sales...YTD  = as.numeric(gsub(",", "",Physical.Albums.Sales...YTD)),
+                                             Digital.Albums.Sales...YTD = as.numeric(gsub(",", "",Digital.Albums.Sales...YTD)),
+                                             Digital.Song.Sales...YTD = as.numeric(gsub(",", "",Digital.Song.Sales...YTD)),
+                                             Streaming.On.Demand.Audio...YTD = as.numeric(gsub(",", "",Streaming.On.Demand.Audio...YTD)),
+                                             holiday.year = rep(2018,dim(album_list_2018)[1]),
+                                             release.year = year(Release.Date)
+                                             )
+
+album_list_df = as.data.frame(rbind(album_list_2015,album_list_2016,album_list_2017,album_list_2018))
+```
+
+# data processing for daily holiday data
+```{r}
+daily_holiday_2016 = read.csv("/Users/tylerchiu/Downloads/mrc data project/Holiday Trends/daily holiday 2016.csv")
+daily_holiday_2017 = read.csv("/Users/tylerchiu/Downloads/mrc data project/Holiday Trends/daily holiday 2017.csv")
+daily_holiday_2018 = read.csv("/Users/tylerchiu/Downloads/mrc data project/Holiday Trends/daily holiday 2018.csv")
+daily_holiday_2019 = read.csv("/Users/tylerchiu/Downloads/mrc data project/Holiday Trends/daily holiday 2019.csv")
+
+
+daily_holiday_2016 = daily_holiday_2016 %>% mutate(Date = as.Date(Date,
+                                                  format = "%m/%d/%Y"))
+daily_holiday_2016 = daily_holiday_2016 %>% mutate( 
+                                             Albums.w.TEA.w.SEA.On.Demand = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand)),
+                                             Albums.w.TEA.w.SEA.On.Demand.Audio = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand.Audio)),
+                                             Albums.w..TEA  = as.numeric(gsub(",", "",Albums.w..TEA)),
+                                             Total.Album.Sales  = as.numeric(gsub(",", "",Total.Album.Sales)),
+                                             Physical.Albums.Sales  = as.numeric(gsub(",", "",Physical.Albums.Sales)),
+                                             Digital.Albums.Sales = as.numeric(gsub(",", "",Digital.Albums.Sales)),
+                                             Digital.Song.Sales = as.numeric(gsub(",", "",Digital.Song.Sales)),
+                                             Total.Streaming.On.Demand = as.numeric(gsub(",", "",Total.Streaming.On.Demand)),
+                                             Streaming.On.Demand.Audio = as.numeric(gsub(",", "",Streaming.On.Demand.Audio)),
+                                             Streaming.On.Demand.Video = as.numeric(gsub(",", "",Streaming.On.Demand.Video)),
+                                             Total.Streaming.Programmed = as.numeric(gsub(",", "",Total.Streaming.Programmed)),
+                                             Streaming.Programmed.Audio = as.numeric(gsub(",", "",Streaming.Programmed.Audio)),
+                                             Streaming.Programmed.Video = as.numeric(gsub(",", "",Streaming.Programmed.Video)),
+                                             Airplay.Spins = as.numeric(gsub(",", "",Airplay.Spins)),
+                                             Airplay.Audience = as.numeric(gsub(",", "",Airplay.Audience)),
+                                             day = day(Date),
+                                             year = year(Date),
+                                             industry = rep("holiday",dim(daily_holiday_2016)[1]) #binary variable to indicate not industry data
+                                             )
+
+daily_holiday_2017 = daily_holiday_2017 %>% mutate(Date = as.Date(Date,
+                                                  format = "%m/%d/%Y"))
+daily_holiday_2017 = daily_holiday_2017 %>% mutate( 
+                                             Albums.w.TEA.w.SEA.On.Demand = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand)),
+                                             Albums.w.TEA.w.SEA.On.Demand.Audio = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand.Audio)),
+                                             Albums.w..TEA  = as.numeric(gsub(",", "",Albums.w..TEA)),
+                                             Total.Album.Sales  = as.numeric(gsub(",", "",Total.Album.Sales)),
+                                             Physical.Albums.Sales  = as.numeric(gsub(",", "",Physical.Albums.Sales)),
+                                             Digital.Albums.Sales = as.numeric(gsub(",", "",Digital.Albums.Sales)),
+                                             Digital.Song.Sales = as.numeric(gsub(",", "",Digital.Song.Sales)),
+                                             Total.Streaming.On.Demand = as.numeric(gsub(",", "",Total.Streaming.On.Demand)),
+                                             Streaming.On.Demand.Audio = as.numeric(gsub(",", "",Streaming.On.Demand.Audio)),
+                                             Streaming.On.Demand.Video = as.numeric(gsub(",", "",Streaming.On.Demand.Video)),
+                                             Total.Streaming.Programmed = as.numeric(gsub(",", "",Total.Streaming.Programmed)),
+                                             Streaming.Programmed.Audio = as.numeric(gsub(",", "",Streaming.Programmed.Audio)),
+                                             Streaming.Programmed.Video = as.numeric(gsub(",", "",Streaming.Programmed.Video)),
+                                             Airplay.Spins = as.numeric(gsub(",", "",Airplay.Spins)),
+                                             Airplay.Audience = as.numeric(gsub(",", "",Airplay.Audience)),
+                                             day = day(Date),
+                                             year = year(Date),
+                                             industry = rep("holiday",dim(daily_holiday_2017)[1]) #binary variable to indicate not industry data
+                                             )
+
+daily_holiday_2018 = daily_holiday_2018 %>% mutate(Date = as.Date(Date,
+                                                  format = "%m/%d/%Y"))
+daily_holiday_2018 = daily_holiday_2018 %>% mutate( 
+                                             Albums.w.TEA.w.SEA.On.Demand = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand)),
+                                             Albums.w.TEA.w.SEA.On.Demand.Audio = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand.Audio)),
+                                             Albums.w..TEA  = as.numeric(gsub(",", "",Albums.w..TEA)),
+                                             Total.Album.Sales  = as.numeric(gsub(",", "",Total.Album.Sales)),
+                                             Physical.Albums.Sales  = as.numeric(gsub(",", "",Physical.Albums.Sales)),
+                                             Digital.Albums.Sales = as.numeric(gsub(",", "",Digital.Albums.Sales)),
+                                             Digital.Song.Sales = as.numeric(gsub(",", "",Digital.Song.Sales)),
+                                             Total.Streaming.On.Demand = as.numeric(gsub(",", "",Total.Streaming.On.Demand)),
+                                             Streaming.On.Demand.Audio = as.numeric(gsub(",", "",Streaming.On.Demand.Audio)),
+                                             Streaming.On.Demand.Video = as.numeric(gsub(",", "",Streaming.On.Demand.Video)),
+                                             Total.Streaming.Programmed = as.numeric(gsub(",", "",Total.Streaming.Programmed)),
+                                             Streaming.Programmed.Audio = as.numeric(gsub(",", "",Streaming.Programmed.Audio)),
+                                             Streaming.Programmed.Video = as.numeric(gsub(",", "",Streaming.Programmed.Video)),
+                                             Airplay.Spins = as.numeric(gsub(",", "",Airplay.Spins)),
+                                             Airplay.Audience = as.numeric(gsub(",", "",Airplay.Audience)),
+                                             day = day(Date),
+                                             year = year(Date),
+                                             industry = rep("holiday",dim(daily_holiday_2018)[1]) #binary variable to indicate not industry data
+                                             )
+
+daily_holiday_2019 = daily_holiday_2019 %>% mutate(Date = as.Date(Date,
+                                                  format = "%m/%d/%Y"))
+daily_holiday_2019 = daily_holiday_2019 %>% mutate( 
+                                             Albums.w.TEA.w.SEA.On.Demand = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand)),
+                                             Albums.w.TEA.w.SEA.On.Demand.Audio = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand.Audio)),
+                                             Albums.w..TEA  = as.numeric(gsub(",", "",Albums.w..TEA)),
+                                             Total.Album.Sales  = as.numeric(gsub(",", "",Total.Album.Sales)),
+                                             Physical.Albums.Sales  = as.numeric(gsub(",", "",Physical.Albums.Sales)),
+                                             Digital.Albums.Sales = as.numeric(gsub(",", "",Digital.Albums.Sales)),
+                                             Digital.Song.Sales = as.numeric(gsub(",", "",Digital.Song.Sales)),
+                                             Total.Streaming.On.Demand = as.numeric(gsub(",", "",Total.Streaming.On.Demand)),
+                                             Streaming.On.Demand.Audio = as.numeric(gsub(",", "",Streaming.On.Demand.Audio)),
+                                             Streaming.On.Demand.Video = as.numeric(gsub(",", "",Streaming.On.Demand.Video)),
+                                             Total.Streaming.Programmed = as.numeric(gsub(",", "",Total.Streaming.Programmed)),
+                                             Streaming.Programmed.Audio = as.numeric(gsub(",", "",Streaming.Programmed.Audio)),
+                                             Streaming.Programmed.Video = as.numeric(gsub(",", "",Streaming.Programmed.Video)),
+                                             Airplay.Spins = as.numeric(gsub(",", "",Airplay.Spins)),
+                                             Airplay.Audience = as.numeric(gsub(",", "",Airplay.Audience)),
+                                             day = day(Date),
+                                             year = year(Date),
+                                             industry = rep("holiday",dim(daily_holiday_2019)[1]) #binary variable to indicate not industry data
+                                             )
+
+
+```
+
+# data processing for daily industry data
+```{r}
+daily_industry_2016 = read.csv("/Users/tylerchiu/Downloads/mrc data project/Holiday Trends/daily industry 2016.csv")
+daily_industry_2017 = read.csv("/Users/tylerchiu/Downloads/mrc data project/Holiday Trends/daily industry 2017.csv")
+daily_industry_2018 = read.csv("/Users/tylerchiu/Downloads/mrc data project/Holiday Trends/daily industry 2018.csv")
+daily_industry_2019 = read.csv("/Users/tylerchiu/Downloads/mrc data project/Holiday Trends/daily industry 2019.csv")
+
+daily_industry_2016 = daily_industry_2016 %>% mutate(Date = as.Date(Date,
+                                                  format = "%m/%d/%Y"))
+daily_industry_2016 = daily_industry_2016 %>% mutate( 
+                                             Albums.w.TEA.w.SEA.On.Demand = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand)),
+                                             Albums.w.TEA.w.SEA.On.Demand.Audio = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand.Audio)),
+                                             Albums.w..TEA  = as.numeric(gsub(",", "",Albums.w..TEA)),
+                                             Total.Album.Sales  = as.numeric(gsub(",", "",Total.Album.Sales)),
+                                             Physical.Albums.Sales  = as.numeric(gsub(",", "",Physical.Albums.Sales)),
+                                             Digital.Albums.Sales = as.numeric(gsub(",", "",Digital.Albums.Sales)),
+                                             Digital.Song.Sales = as.numeric(gsub(",", "",Digital.Song.Sales)),
+                                             Total.Streaming.On.Demand = as.numeric(gsub(",", "",Total.Streaming.On.Demand)),
+                                             Streaming.On.Demand.Audio = as.numeric(gsub(",", "",Streaming.On.Demand.Audio)),
+                                             Streaming.On.Demand.Video = as.numeric(gsub(",", "",Streaming.On.Demand.Video)),
+                                             Total.Streaming.Programmed = as.numeric(gsub(",", "",Total.Streaming.Programmed)),
+                                             Streaming.Programmed.Audio = as.numeric(gsub(",", "",Streaming.Programmed.Audio)),
+                                             Streaming.Programmed.Video = as.numeric(gsub(",", "",Streaming.Programmed.Video)),
+                                             Airplay.Spins = as.numeric(gsub(",", "",Airplay.Spins)),
+                                             Airplay.Audience = as.numeric(gsub(",", "",Airplay.Audience)),
+                                             day = day(Date),
+                                             year = year(Date),
+                                             industry = rep("industry",dim(daily_industry_2016)[1]) #binary variable to indicate it is industry data
+                                             )
+
+daily_industry_2017 = daily_industry_2017 %>% mutate(Date = as.Date(Date,
+                                                  format = "%m/%d/%Y"))
+daily_industry_2017 = daily_industry_2017 %>% mutate( 
+                                             Albums.w.TEA.w.SEA.On.Demand = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand)),
+                                             Albums.w.TEA.w.SEA.On.Demand.Audio = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand.Audio)),
+                                             Albums.w..TEA  = as.numeric(gsub(",", "",Albums.w..TEA)),
+                                             Total.Album.Sales  = as.numeric(gsub(",", "",Total.Album.Sales)),
+                                             Physical.Albums.Sales  = as.numeric(gsub(",", "",Physical.Albums.Sales)),
+                                             Digital.Albums.Sales = as.numeric(gsub(",", "",Digital.Albums.Sales)),
+                                             Digital.Song.Sales = as.numeric(gsub(",", "",Digital.Song.Sales)),
+                                             Total.Streaming.On.Demand = as.numeric(gsub(",", "",Total.Streaming.On.Demand)),
+                                             Streaming.On.Demand.Audio = as.numeric(gsub(",", "",Streaming.On.Demand.Audio)),
+                                             Streaming.On.Demand.Video = as.numeric(gsub(",", "",Streaming.On.Demand.Video)),
+                                             Total.Streaming.Programmed = as.numeric(gsub(",", "",Total.Streaming.Programmed)),
+                                             Streaming.Programmed.Audio = as.numeric(gsub(",", "",Streaming.Programmed.Audio)),
+                                             Streaming.Programmed.Video = as.numeric(gsub(",", "",Streaming.Programmed.Video)),
+                                             Airplay.Spins = as.numeric(gsub(",", "",Airplay.Spins)),
+                                             Airplay.Audience = as.numeric(gsub(",", "",Airplay.Audience)),
+                                             day = day(Date),
+                                             year = year(Date),
+                                             industry = rep("industry",dim(daily_industry_2017)[1]) #binary variable to indicate it is industry data
+                                             )
+
+daily_industry_2018 = daily_industry_2018 %>% mutate(Date = as.Date(Date,
+                                                  format = "%m/%d/%Y"))
+daily_industry_2018 = daily_industry_2018 %>% mutate( 
+                                             Albums.w.TEA.w.SEA.On.Demand = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand)),
+                                             Albums.w.TEA.w.SEA.On.Demand.Audio = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand.Audio)),
+                                             Albums.w..TEA  = as.numeric(gsub(",", "",Albums.w..TEA)),
+                                             Total.Album.Sales  = as.numeric(gsub(",", "",Total.Album.Sales)),
+                                             Physical.Albums.Sales  = as.numeric(gsub(",", "",Physical.Albums.Sales)),
+                                             Digital.Albums.Sales = as.numeric(gsub(",", "",Digital.Albums.Sales)),
+                                             Digital.Song.Sales = as.numeric(gsub(",", "",Digital.Song.Sales)),
+                                             Total.Streaming.On.Demand = as.numeric(gsub(",", "",Total.Streaming.On.Demand)),
+                                             Streaming.On.Demand.Audio = as.numeric(gsub(",", "",Streaming.On.Demand.Audio)),
+                                             Streaming.On.Demand.Video = as.numeric(gsub(",", "",Streaming.On.Demand.Video)),
+                                             Total.Streaming.Programmed = as.numeric(gsub(",", "",Total.Streaming.Programmed)),
+                                             Streaming.Programmed.Audio = as.numeric(gsub(",", "",Streaming.Programmed.Audio)),
+                                             Streaming.Programmed.Video = as.numeric(gsub(",", "",Streaming.Programmed.Video)),
+                                             Airplay.Spins = as.numeric(gsub(",", "",Airplay.Spins)),
+                                             Airplay.Audience = as.numeric(gsub(",", "",Airplay.Audience)),
+                                             day = day(Date),
+                                             year = year(Date),
+                                             industry = rep("industry",dim(daily_industry_2018)[1]) #binary variable to indicate it is industry data)
+                                             )
+
+daily_industry_2019 = daily_industry_2019 %>% mutate(Date = as.Date(Date,
+                                                  format = "%m/%d/%Y"))
+daily_industry_2019 = daily_industry_2019 %>% mutate( 
+                                             Albums.w.TEA.w.SEA.On.Demand = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand)),
+                                             Albums.w.TEA.w.SEA.On.Demand.Audio = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand.Audio)),
+                                             Albums.w..TEA  = as.numeric(gsub(",", "",Albums.w..TEA)),
+                                             Total.Album.Sales  = as.numeric(gsub(",", "",Total.Album.Sales)),
+                                             Physical.Albums.Sales  = as.numeric(gsub(",", "",Physical.Albums.Sales)),
+                                             Digital.Albums.Sales = as.numeric(gsub(",", "",Digital.Albums.Sales)),
+                                             Digital.Song.Sales = as.numeric(gsub(",", "",Digital.Song.Sales)),
+                                             Total.Streaming.On.Demand = as.numeric(gsub(",", "",Total.Streaming.On.Demand)),
+                                             Streaming.On.Demand.Audio = as.numeric(gsub(",", "",Streaming.On.Demand.Audio)),
+                                             Streaming.On.Demand.Video = as.numeric(gsub(",", "",Streaming.On.Demand.Video)),
+                                             Total.Streaming.Programmed = as.numeric(gsub(",", "",Total.Streaming.Programmed)),
+                                             Streaming.Programmed.Audio = as.numeric(gsub(",", "",Streaming.Programmed.Audio)),
+                                             Streaming.Programmed.Video = as.numeric(gsub(",", "",Streaming.Programmed.Video)),
+                                             Airplay.Spins = as.numeric(gsub(",", "",Airplay.Spins)),
+                                             Airplay.Audience = as.numeric(gsub(",", "",Airplay.Audience)),
+                                             day = day(Date),
+                                             year = year(Date),
+                                             industry = rep("industry",dim(daily_industry_2019)[1]) #binary variable to indicate it is industry data
+                                             )
+daily_holiday_industry = as.data.frame(rbind(daily_holiday_2016,daily_holiday_2017,daily_holiday_2018,daily_holiday_2019,daily_industry_2016,daily_industry_2017,daily_industry_2018,daily_industry_2019))
+             
+```
+
+# data processing for weekly holiday data
+```{r}
+weekly_holiday_2015 = read.csv("/Users/tylerchiu/Downloads/mrc data project/Holiday Trends/weekly holiday 2015.csv")
+weekly_holiday_2016 = read.csv("/Users/tylerchiu/Downloads/mrc data project/Holiday Trends/weekly holiday 2016.csv")
+weekly_holiday_2017 = read.csv("/Users/tylerchiu/Downloads/mrc data project/Holiday Trends/weekly holiday 2017.csv")
+weekly_holiday_2018 = read.csv("/Users/tylerchiu/Downloads/mrc data project/Holiday Trends/weekly holiday 2018.csv")
+weekly_holiday_2019 = read.csv("/Users/tylerchiu/Downloads/mrc data project/Holiday Trends/weekly holiday 2019.csv")
+
+weekly_holiday_2015 = weekly_holiday_2015 %>% mutate( 
+                                             Albums.w.TEA.w.SEA.On.Demand = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand)),
+                                             Albums.w.TEA.w.SEA.On.Demand.Audio = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand.Audio)),
+                                             Albums.w..TEA  = as.numeric(gsub(",", "",Albums.w..TEA)),
+                                             Total.Album.Sales  = as.numeric(gsub(",", "",Total.Album.Sales)),
+                                             Physical.Albums.Sales  = as.numeric(gsub(",", "",Physical.Albums.Sales)),
+                                             Digital.Albums.Sales = as.numeric(gsub(",", "",Digital.Albums.Sales)),
+                                             Digital.Song.Sales = as.numeric(gsub(",", "",Digital.Song.Sales)),
+                                             Total.Streaming.On.Demand = as.numeric(gsub(",", "",Total.Streaming.On.Demand)),
+                                             Streaming.On.Demand.Audio = as.numeric(gsub(",", "",Streaming.On.Demand.Audio)),
+                                             Streaming.On.Demand.Video = as.numeric(gsub(",", "",Streaming.On.Demand.Video)),
+                                             Total.Streaming.Programmed = as.numeric(gsub(",", "",Total.Streaming.Programmed)),
+                                             Streaming.Programmed.Audio = as.numeric(gsub(",", "",Streaming.Programmed.Audio)),
+                                             Streaming.Programmed.Video = as.numeric(gsub(",", "",Streaming.Programmed.Video)),
+                                             Airplay.Spins = as.numeric(gsub(",", "",Airplay.Spins)),
+                                             Airplay.Audience = as.numeric(gsub(",", "",Airplay.Audience)),
+                                             industry = rep("holiday",dim(weekly_holiday_2015)[1]), #binary variable to indicate it is industry data,
+                                             week = c(1:dim(weekly_holiday_2015)[1]),
+                                             year = rep(2015,dim(weekly_holiday_2015)[1])
+                                             )
+
+weekly_holiday_2016 = weekly_holiday_2016 %>% mutate( 
+                                             Albums.w.TEA.w.SEA.On.Demand = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand)),
+                                             Albums.w.TEA.w.SEA.On.Demand.Audio = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand.Audio)),
+                                             Albums.w..TEA  = as.numeric(gsub(",", "",Albums.w..TEA)),
+                                             Total.Album.Sales  = as.numeric(gsub(",", "",Total.Album.Sales)),
+                                             Physical.Albums.Sales  = as.numeric(gsub(",", "",Physical.Albums.Sales)),
+                                             Digital.Albums.Sales = as.numeric(gsub(",", "",Digital.Albums.Sales)),
+                                             Digital.Song.Sales = as.numeric(gsub(",", "",Digital.Song.Sales)),
+                                             Total.Streaming.On.Demand = as.numeric(gsub(",", "",Total.Streaming.On.Demand)),
+                                             Streaming.On.Demand.Audio = as.numeric(gsub(",", "",Streaming.On.Demand.Audio)),
+                                             Streaming.On.Demand.Video = as.numeric(gsub(",", "",Streaming.On.Demand.Video)),
+                                             Total.Streaming.Programmed = as.numeric(gsub(",", "",Total.Streaming.Programmed)),
+                                             Streaming.Programmed.Audio = as.numeric(gsub(",", "",Streaming.Programmed.Audio)),
+                                             Streaming.Programmed.Video = as.numeric(gsub(",", "",Streaming.Programmed.Video)),
+                                             Airplay.Spins = as.numeric(gsub(",", "",Airplay.Spins)),
+                                             Airplay.Audience = as.numeric(gsub(",", "",Airplay.Audience)),
+                                             industry = rep("holiday",dim(weekly_holiday_2016)[1]), #binary variable to indicate it is industry data,
+                                             week = c(1:dim(weekly_holiday_2016)[1]),
+                                             year = rep(2016,dim(weekly_holiday_2016)[1])
+                                             )
+
+weekly_holiday_2017 = weekly_holiday_2017 %>% mutate( 
+                                             Albums.w.TEA.w.SEA.On.Demand = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand)),
+                                             Albums.w.TEA.w.SEA.On.Demand.Audio = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand.Audio)),
+                                             Albums.w..TEA  = as.numeric(gsub(",", "",Albums.w..TEA)),
+                                             Total.Album.Sales  = as.numeric(gsub(",", "",Total.Album.Sales)),
+                                             Physical.Albums.Sales  = as.numeric(gsub(",", "",Physical.Albums.Sales)),
+                                             Digital.Albums.Sales = as.numeric(gsub(",", "",Digital.Albums.Sales)),
+                                             Digital.Song.Sales = as.numeric(gsub(",", "",Digital.Song.Sales)),
+                                             Total.Streaming.On.Demand = as.numeric(gsub(",", "",Total.Streaming.On.Demand)),
+                                             Streaming.On.Demand.Audio = as.numeric(gsub(",", "",Streaming.On.Demand.Audio)),
+                                             Streaming.On.Demand.Video = as.numeric(gsub(",", "",Streaming.On.Demand.Video)),
+                                             Total.Streaming.Programmed = as.numeric(gsub(",", "",Total.Streaming.Programmed)),
+                                             Streaming.Programmed.Audio = as.numeric(gsub(",", "",Streaming.Programmed.Audio)),
+                                             Streaming.Programmed.Video = as.numeric(gsub(",", "",Streaming.Programmed.Video)),
+                                             Airplay.Spins = as.numeric(gsub(",", "",Airplay.Spins)),
+                                             Airplay.Audience = as.numeric(gsub(",", "",Airplay.Audience)),
+                                             industry = rep("holiday",dim(weekly_holiday_2017)[1]), #binary variable to indicate it is industry data,
+                                             week = c(1:dim(weekly_holiday_2017)[1]),
+                                             year = rep(2017,dim(weekly_holiday_2017)[1])
+                                             )
+
+weekly_holiday_2018 = weekly_holiday_2018 %>% mutate( 
+                                             Albums.w.TEA.w.SEA.On.Demand = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand)),
+                                             Albums.w.TEA.w.SEA.On.Demand.Audio = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand.Audio)),
+                                             Albums.w..TEA  = as.numeric(gsub(",", "",Albums.w..TEA)),
+                                             Total.Album.Sales  = as.numeric(gsub(",", "",Total.Album.Sales)),
+                                             Physical.Albums.Sales  = as.numeric(gsub(",", "",Physical.Albums.Sales)),
+                                             Digital.Albums.Sales = as.numeric(gsub(",", "",Digital.Albums.Sales)),
+                                             Digital.Song.Sales = as.numeric(gsub(",", "",Digital.Song.Sales)),
+                                             Total.Streaming.On.Demand = as.numeric(gsub(",", "",Total.Streaming.On.Demand)),
+                                             Streaming.On.Demand.Audio = as.numeric(gsub(",", "",Streaming.On.Demand.Audio)),
+                                             Streaming.On.Demand.Video = as.numeric(gsub(",", "",Streaming.On.Demand.Video)),
+                                             Total.Streaming.Programmed = as.numeric(gsub(",", "",Total.Streaming.Programmed)),
+                                             Streaming.Programmed.Audio = as.numeric(gsub(",", "",Streaming.Programmed.Audio)),
+                                             Streaming.Programmed.Video = as.numeric(gsub(",", "",Streaming.Programmed.Video)),
+                                             Airplay.Spins = as.numeric(gsub(",", "",Airplay.Spins)),
+                                             Airplay.Audience = as.numeric(gsub(",", "",Airplay.Audience)),
+                                             industry = rep("holiday",dim(weekly_holiday_2018)[1]), #binary variable to indicate it is industry data,
+                                             week = c(1:dim(weekly_holiday_2018)[1]),
+                                             year = rep(2018,dim(weekly_holiday_2018)[1])
+                                             )
+
+weekly_holiday_2019 = weekly_holiday_2019 %>% mutate( 
+                                             Albums.w.TEA.w.SEA.On.Demand = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand)),
+                                             Albums.w.TEA.w.SEA.On.Demand.Audio = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand.Audio)),
+                                             Albums.w..TEA  = as.numeric(gsub(",", "",Albums.w..TEA)),
+                                             Total.Album.Sales  = as.numeric(gsub(",", "",Total.Album.Sales)),
+                                             Physical.Albums.Sales  = as.numeric(gsub(",", "",Physical.Albums.Sales)),
+                                             Digital.Albums.Sales = as.numeric(gsub(",", "",Digital.Albums.Sales)),
+                                             Digital.Song.Sales = as.numeric(gsub(",", "",Digital.Song.Sales)),
+                                             Total.Streaming.On.Demand = as.numeric(gsub(",", "",Total.Streaming.On.Demand)),
+                                             Streaming.On.Demand.Audio = as.numeric(gsub(",", "",Streaming.On.Demand.Audio)),
+                                             Streaming.On.Demand.Video = as.numeric(gsub(",", "",Streaming.On.Demand.Video)),
+                                             Total.Streaming.Programmed = as.numeric(gsub(",", "",Total.Streaming.Programmed)),
+                                             Streaming.Programmed.Audio = as.numeric(gsub(",", "",Streaming.Programmed.Audio)),
+                                             Streaming.Programmed.Video = as.numeric(gsub(",", "",Streaming.Programmed.Video)),
+                                             Airplay.Spins = as.numeric(gsub(",", "",Airplay.Spins)),
+                                             Airplay.Audience = as.numeric(gsub(",", "",Airplay.Audience)),
+                                             industry = rep("holiday",dim(weekly_holiday_2019)[1]), #binary variable to indicate it is industry data,
+                                             week = c(1:dim(weekly_holiday_2019)[1]),
+                                             year = rep(2019,dim(weekly_holiday_2019)[1])
+                                             )
+
+```
+
+# data processing for weekly industry
+```{r}
+weekly_industry_2015 = read.csv("/Users/tylerchiu/Downloads/mrc data project/Holiday Trends/weekly industry 2015.csv")
+weekly_industry_2016 = read.csv("/Users/tylerchiu/Downloads/mrc data project/Holiday Trends/weekly industry 2016.csv")
+weekly_industry_2017 = read.csv("/Users/tylerchiu/Downloads/mrc data project/Holiday Trends/weekly industry 2017.csv")
+weekly_industry_2018 = read.csv("/Users/tylerchiu/Downloads/mrc data project/Holiday Trends/weekly industry 2018.csv")
+weekly_industry_2019 = read.csv("/Users/tylerchiu/Downloads/mrc data project/Holiday Trends/weekly industry 2019.csv")
+
+weekly_industry_2015 = weekly_industry_2015 %>% mutate( 
+                                             Albums.w.TEA.w.SEA.On.Demand = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand)),
+                                             Albums.w.TEA.w.SEA.On.Demand.Audio = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand.Audio)),
+                                             Albums.w..TEA  = as.numeric(gsub(",", "",Albums.w..TEA)),
+                                             Total.Album.Sales  = as.numeric(gsub(",", "",Total.Album.Sales)),
+                                             Physical.Albums.Sales  = as.numeric(gsub(",", "",Physical.Albums.Sales)),
+                                             Digital.Albums.Sales = as.numeric(gsub(",", "",Digital.Albums.Sales)),
+                                             Digital.Song.Sales = as.numeric(gsub(",", "",Digital.Song.Sales)),
+                                             Total.Streaming.On.Demand = as.numeric(gsub(",", "",Total.Streaming.On.Demand)),
+                                             Streaming.On.Demand.Audio = as.numeric(gsub(",", "",Streaming.On.Demand.Audio)),
+                                             Streaming.On.Demand.Video = as.numeric(gsub(",", "",Streaming.On.Demand.Video)),
+                                             Total.Streaming.Programmed = as.numeric(gsub(",", "",Total.Streaming.Programmed)),
+                                             Streaming.Programmed.Audio = as.numeric(gsub(",", "",Streaming.Programmed.Audio)),
+                                             Streaming.Programmed.Video = as.numeric(gsub(",", "",Streaming.Programmed.Video)),
+                                             Airplay.Spins = as.numeric(gsub(",", "",Airplay.Spins)),
+                                             Airplay.Audience = as.numeric(gsub(",", "",Airplay.Audience)),
+                                             industry = rep("industry",dim(weekly_industry_2015)[1]), #binary variable to indicate it is industry data,
+                                             week = c(1:dim(weekly_industry_2015)[1]),
+                                             year = rep(2015,dim(weekly_industry_2015)[1])
+                                             )
+
+weekly_industry_2016 = weekly_industry_2016 %>% mutate( 
+                                             Albums.w.TEA.w.SEA.On.Demand = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand)),
+                                             Albums.w.TEA.w.SEA.On.Demand.Audio = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand.Audio)),
+                                             Albums.w..TEA  = as.numeric(gsub(",", "",Albums.w..TEA)),
+                                             Total.Album.Sales  = as.numeric(gsub(",", "",Total.Album.Sales)),
+                                             Physical.Albums.Sales  = as.numeric(gsub(",", "",Physical.Albums.Sales)),
+                                             Digital.Albums.Sales = as.numeric(gsub(",", "",Digital.Albums.Sales)),
+                                             Digital.Song.Sales = as.numeric(gsub(",", "",Digital.Song.Sales)),
+                                             Total.Streaming.On.Demand = as.numeric(gsub(",", "",Total.Streaming.On.Demand)),
+                                             Streaming.On.Demand.Audio = as.numeric(gsub(",", "",Streaming.On.Demand.Audio)),
+                                             Streaming.On.Demand.Video = as.numeric(gsub(",", "",Streaming.On.Demand.Video)),
+                                             Total.Streaming.Programmed = as.numeric(gsub(",", "",Total.Streaming.Programmed)),
+                                             Streaming.Programmed.Audio = as.numeric(gsub(",", "",Streaming.Programmed.Audio)),
+                                             Streaming.Programmed.Video = as.numeric(gsub(",", "",Streaming.Programmed.Video)),
+                                             Airplay.Spins = as.numeric(gsub(",", "",Airplay.Spins)),
+                                             Airplay.Audience = as.numeric(gsub(",", "",Airplay.Audience)),
+                                             industry = rep("industry",dim(weekly_industry_2016)[1]), #binary variable to indicate it is industry data,
+                                             week = c(1:dim(weekly_industry_2016)[1]),
+                                             year = rep(2016,dim(weekly_industry_2016)[1])
+                                             )
+
+weekly_industry_2017 = weekly_industry_2017 %>% mutate( 
+                                             Albums.w.TEA.w.SEA.On.Demand = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand)),
+                                             Albums.w.TEA.w.SEA.On.Demand.Audio = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand.Audio)),
+                                             Albums.w..TEA  = as.numeric(gsub(",", "",Albums.w..TEA)),
+                                             Total.Album.Sales  = as.numeric(gsub(",", "",Total.Album.Sales)),
+                                             Physical.Albums.Sales  = as.numeric(gsub(",", "",Physical.Albums.Sales)),
+                                             Digital.Albums.Sales = as.numeric(gsub(",", "",Digital.Albums.Sales)),
+                                             Digital.Song.Sales = as.numeric(gsub(",", "",Digital.Song.Sales)),
+                                             Total.Streaming.On.Demand = as.numeric(gsub(",", "",Total.Streaming.On.Demand)),
+                                             Streaming.On.Demand.Audio = as.numeric(gsub(",", "",Streaming.On.Demand.Audio)),
+                                             Streaming.On.Demand.Video = as.numeric(gsub(",", "",Streaming.On.Demand.Video)),
+                                             Total.Streaming.Programmed = as.numeric(gsub(",", "",Total.Streaming.Programmed)),
+                                             Streaming.Programmed.Audio = as.numeric(gsub(",", "",Streaming.Programmed.Audio)),
+                                             Streaming.Programmed.Video = as.numeric(gsub(",", "",Streaming.Programmed.Video)),
+                                             Airplay.Spins = as.numeric(gsub(",", "",Airplay.Spins)),
+                                             Airplay.Audience = as.numeric(gsub(",", "",Airplay.Audience)),
+                                             industry = rep("industry",dim(weekly_industry_2017)[1]), #binary variable to indicate it is industry data,
+                                             week = c(1:dim(weekly_industry_2017)[1]),
+                                             year = rep(2017,dim(weekly_industry_2017)[1])
+                                             )
+
+weekly_industry_2018 = weekly_industry_2018 %>% mutate( 
+                                             Albums.w.TEA.w.SEA.On.Demand = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand)),
+                                             Albums.w.TEA.w.SEA.On.Demand.Audio = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand.Audio)),
+                                             Albums.w..TEA  = as.numeric(gsub(",", "",Albums.w..TEA)),
+                                             Total.Album.Sales  = as.numeric(gsub(",", "",Total.Album.Sales)),
+                                             Physical.Albums.Sales  = as.numeric(gsub(",", "",Physical.Albums.Sales)),
+                                             Digital.Albums.Sales = as.numeric(gsub(",", "",Digital.Albums.Sales)),
+                                             Digital.Song.Sales = as.numeric(gsub(",", "",Digital.Song.Sales)),
+                                             Total.Streaming.On.Demand = as.numeric(gsub(",", "",Total.Streaming.On.Demand)),
+                                             Streaming.On.Demand.Audio = as.numeric(gsub(",", "",Streaming.On.Demand.Audio)),
+                                             Streaming.On.Demand.Video = as.numeric(gsub(",", "",Streaming.On.Demand.Video)),
+                                             Total.Streaming.Programmed = as.numeric(gsub(",", "",Total.Streaming.Programmed)),
+                                             Streaming.Programmed.Audio = as.numeric(gsub(",", "",Streaming.Programmed.Audio)),
+                                             Streaming.Programmed.Video = as.numeric(gsub(",", "",Streaming.Programmed.Video)),
+                                             Airplay.Spins = as.numeric(gsub(",", "",Airplay.Spins)),
+                                             Airplay.Audience = as.numeric(gsub(",", "",Airplay.Audience)),
+                                             industry = rep("industry",dim(weekly_industry_2018)[1]), #binary variable to indicate it is industry data,
+                                             week = c(1:dim(weekly_industry_2018)[1]),
+                                             year = rep(2018,dim(weekly_industry_2018)[1])
+                                             )
+
+weekly_industry_2019 = weekly_industry_2019 %>% mutate( 
+                                             Albums.w.TEA.w.SEA.On.Demand = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand)),
+                                             Albums.w.TEA.w.SEA.On.Demand.Audio = as.numeric(gsub(",", "",Albums.w.TEA.w.SEA.On.Demand.Audio)),
+                                             Albums.w..TEA  = as.numeric(gsub(",", "",Albums.w..TEA)),
+                                             Total.Album.Sales  = as.numeric(gsub(",", "",Total.Album.Sales)),
+                                             Physical.Albums.Sales  = as.numeric(gsub(",", "",Physical.Albums.Sales)),
+                                             Digital.Albums.Sales = as.numeric(gsub(",", "",Digital.Albums.Sales)),
+                                             Digital.Song.Sales = as.numeric(gsub(",", "",Digital.Song.Sales)),
+                                             Total.Streaming.On.Demand = as.numeric(gsub(",", "",Total.Streaming.On.Demand)),
+                                             Streaming.On.Demand.Audio = as.numeric(gsub(",", "",Streaming.On.Demand.Audio)),
+                                             Streaming.On.Demand.Video = as.numeric(gsub(",", "",Streaming.On.Demand.Video)),
+                                             Total.Streaming.Programmed = as.numeric(gsub(",", "",Total.Streaming.Programmed)),
+                                             Streaming.Programmed.Audio = as.numeric(gsub(",", "",Streaming.Programmed.Audio)),
+                                             Streaming.Programmed.Video = as.numeric(gsub(",", "",Streaming.Programmed.Video)),
+                                             Airplay.Spins = as.numeric(gsub(",", "",Airplay.Spins)),
+                                             Airplay.Audience = as.numeric(gsub(",", "",Airplay.Audience)),
+                                             industry = rep("industry",dim(weekly_industry_2019)[1]), #binary variable to indicate it is industry data,
+                                             week = c(1:dim(weekly_industry_2019)[1]),
+                                             year = rep(2019,dim(weekly_industry_2019)[1])
+                                             )
+
+weekly_holiday_industry = as.data.frame(rbind(weekly_holiday_2015,weekly_holiday_2016,weekly_holiday_2017,weekly_holiday_2018,weekly_holiday_2019,weekly_industry_2015,weekly_industry_2016,weekly_industry_2017,weekly_industry_2018,weekly_industry_2019))
+```
+# data processing for song list
+```{r}
+song_list_2016 = read.csv("/Users/tylerchiu/Downloads/mrc data project/HolidaySeasonal On-Demand Audio Streaming (YTD) Charts/2016-Table 1.csv")
+song_list_2017 = read.csv("/Users/tylerchiu/Downloads/mrc data project/HolidaySeasonal On-Demand Audio Streaming (YTD) Charts/2017-Table 1.csv")
+song_list_2018 = read.csv("/Users/tylerchiu/Downloads/mrc data project/HolidaySeasonal On-Demand Audio Streaming (YTD) Charts/2018-Table 1.csv")
+song_list_2019 = read.csv("/Users/tylerchiu/Downloads/mrc data project/HolidaySeasonal On-Demand Audio Streaming (YTD) Charts/2019-Table 1.csv")
+
+song_list_2016 = song_list_2016 %>% mutate(YTD.Audio = as.numeric(gsub(",", "",YTD.Audio)))
+song_list_2017 = song_list_2017 %>% mutate(YTD.Audio = as.numeric(gsub(",", "",YTD.Audio)))
+song_list_2018 = song_list_2018 %>% mutate(YTD.Audio = as.numeric(gsub(",", "",YTD.Audio)))
+song_list_2019 = song_list_2019 %>% mutate(YTD.Audio = as.numeric(gsub(",", "",YTD.Audio)))
+
+song_list_df = as.data.frame(rbind(song_list_2016,song_list_2017,song_list_2018,song_list_2019))
+```
+
+
+# exploratory analysis for album list
+```{r,echo=T}
+attach(album_list_2015)
+summary(album_list_2015)
+# summary(album_list_2015$Artist)
+summary(album_list_2015$Albums.w.TEA.w.SEA.On.Demand.Audio...YTD)
+# summary(album_list_2016$Artist)
+# summary(album_list_2017$Artist)
+# summary(album_list_2018$Artist)
+
+plot(Artist)
+plot(Core.Genre)
+plot(Core.Genre)
+
+detach(album_list_2015)
+```
+
+# exploratory analysis on daily trends
+```{r,echo=T}
+g = ggplot(data=daily_holiday_industry, aes(x=day,y=Albums.w.TEA.w.SEA.On.Demand,fill=as.factor(industry))) + geom_col(position='dodge') + facet_wrap(vars(year)) + labs(fill="Genre") + ylab("Total Album Equivalent Consumption") + ggtitle("Total Equivalent Consumption from 2016-2019 between Holiday and Other Genres")
+
+ggplotly(g) 
+#shows dispraportion in holiday vs other music available at the time
+```
+
+
+
+# exploratory analysis on weekly trends
+```{r,echo=T}
+# reasonable to say that there is more traffic towards non holiday music year round
+g = ggplot(data=weekly_holiday_industry, aes(x=as.factor(week),y=Albums.w.TEA.w.SEA.On.Demand,fill=as.factor(industry))) + geom_col(position='dodge') + facet_wrap(vars(year)) + xlab("Weeks")+ylab("Total Album Equivalent Consumption") + ggtitle("Yearly Total Equivalent Consumption from 2016-2019") + labs(fill="Genre")
+# + ggtitle("daily industry vs holiday comparison from 2016-2019")
+ggplotly(g) 
+
+#shows dispraportion in holiday vs other music (marked as industry) available at the time
+g = ggplot(data=weekly_holiday_industry, aes(x=as.factor(week),y=Total.Album.Sales,fill=as.factor(industry))) + geom_col(position='dodge') + facet_wrap(vars(year)) + xlab("Weeks") + ggtitle("Total ALbum Sales from 2016-2019 between Holiday and Other Genres in the Industry")
+ggplotly(g)
+```
+
+# exploratory analysis on song list
+Top Artists ranked by rank and number of weeks on chart
+```{r}
+song_list_df %>% group_by(Artist, Song) %>% arrange(Rank, desc(Weeks.On.Chart)) %>% distinct(Artist)
+```
+
+# How has holiday music been trending?
+There are older artists that show up consistently throughout 2015-2018 who have multiply works that are being listened to during the holidays
+
+Holiday music within the past 15 years have been listened to the most
+```{r, echo=T}
+album_list_df = as.data.frame(rbind(album_list_2015,album_list_2016,album_list_2017,album_list_2018))
+
+summary(album_list_df$release.year)
+# holiday music that is still listened spans over 15 years
+
+plot(album_list_2015$release.year)
+plot(album_list_2016$release.year)
+plot(album_list_2017$release.year)
+plot(album_list_2018$release.year)
+
+# shows that music being consumed over this 15 year span is pretty uniform
+plot(album_list_df$release.year, ylab = "Release Years", xlab = "Albums from 2015-2018" , main = "Distribution of Music Consumed during 2015-2018")
+
+#%>% top_n(10,album_list_df$Albums.w.TEA.w.SEA.On.Demand.Audio...YTD)
+album_list_df %>%  group_by(Artist,Title) %>% arrange(desc(album_list_df$Albums.w.TEA.w.SEA.On.Demand.Audio...YTD)) %>% distinct(Artist) 
+
+# over 4 years, these artists have most album sales per total album equivalent consumption
+album_list_df %>%  group_by(Artist) %>% summarise(avg = mean(Albums.Sales...YTD/Albums.w.TEA.w.SEA.On.Demand.Audio...YTD)) %>%  arrange(desc(avg)) 
+
+#top artist based on different sales/streams
+album_list_df %>%  group_by(Artist) %>% summarise(avg = mean(Physical.Albums.Sales...YTD/Albums.w.TEA.w.SEA.On.Demand.Audio...YTD)) %>%  arrange(desc(avg)) 
+
+album_list_df %>%  group_by(Artist) %>% summarise(avg = mean(Digital.Albums.Sales...YTD /Albums.w.TEA.w.SEA.On.Demand.Audio...YTD)) %>%  arrange(desc(avg)) 
+
+album_list_df %>%  group_by(Artist) %>% summarise(avg = mean(Digital.Song.Sales...YTD /Albums.w.TEA.w.SEA.On.Demand.Audio...YTD)) %>%  arrange(desc(avg)) 
+
+album_list_df %>%  group_by(Artist) %>% summarise(avg = mean(Streaming.On.Demand.Audio...YTD  /Albums.w.TEA.w.SEA.On.Demand.Audio...YTD)) %>%  arrange(desc(avg)) 
+
+
+```
+
+# Are there differences in consumption behaviors towards music from before and after 2004
+```{r,echo=T}
+# artists from before 2004
+before_2004_index = ifelse(album_list_df$release.year<2004,1,0)
+
+album_list_df$before_2004 = before_2004_index
+album_list_df %>% group_by(Artist,release.year) %>%  summarise(avg = mean(Physical.Albums.Sales...YTD/Albums.w.TEA.w.SEA.On.Demand.Audio...YTD)) %>%  arrange(desc(avg)) 
+# shows that despite older musicians from past eras have more works to be listened to, consumers are still listening to specific artists regardless of number of published works
+
+
+album_list_df %>% group_by(Title,Artist,release.year) %>%  summarise(avg = mean(Physical.Albums.Sales...YTD/Albums.w.TEA.w.SEA.On.Demand.Audio...YTD)) %>%  arrange(desc(avg)) 
+
+album_list_df %>% group_by(Title,Artist,release.year) %>%  summarise(avg = mean(Digital.Albums.Sales...YTD/Albums.w.TEA.w.SEA.On.Demand.Audio...YTD)) %>%  arrange(desc(avg))
+
+# older artists are streamed more often
+album_list_df %>% group_by(Title,Artist,release.year) %>%  summarise(avg = mean(Streaming.On.Demand.Audio...YTD /Albums.w.TEA.w.SEA.On.Demand.Audio...YTD)) %>%  arrange(desc(avg))
+
+
+# even distribution of physical album sales across different release years, but there is an overall decrease in physical album sales
+# aside from chipmunks that is from before 2004, the highest physical album sales are from albums after 2004
+g = ggplot(data=album_list_df, aes(x=reorder(Artist,-Physical.Albums.Sales...YTD/Albums.w.TEA.w.SEA.On.Demand.Audio...YTD),y=Physical.Albums.Sales...YTD/Albums.w.TEA.w.SEA.On.Demand.Audio...YTD,fill=as.factor(before_2004))) + geom_col(position='dodge') + ylab("Physical Album Sale Proporition") + xlab("Artists") + labs(fill="< 2004") +
+  ggtitle("Distribution of Physical Album Sales between Old and New Holiday Music")  
+ggplotly(g)
+
+ 
+# albums produced after 2004 are digitally purchased more often, but there is a steady decline of digital ownership
+g = ggplot(data=album_list_df, aes(x=reorder(Artist,-Digital.Albums.Sales...YTD/Albums.w.TEA.w.SEA.On.Demand.Audio...YTD),y=Digital.Albums.Sales...YTD/Albums.w.TEA.w.SEA.On.Demand.Audio...YTD,fill=as.factor(before_2004))) + geom_col(position='dodge')  + xlab("Artists") + labs(fill="< 2004") + ylab("Digital Album Sale Proportion") +
+  ggtitle("Distribution of Digital Album Sales between Old and New Holiday Music")  
+ggplotly(g)
+
+# individual digital song sales see an equal distribution of music from before and after 2004
+g = ggplot(data=album_list_df, aes(x=reorder(Artist,-Digital.Song.Sales...YTD/Albums.w.TEA.w.SEA.On.Demand.Audio...YTD),y=Digital.Song.Sales...YTD/Albums.w.TEA.w.SEA.On.Demand.Audio...YTD,fill=as.factor(before_2004))) + geom_col(position='dodge')+ xlab("Artists") + labs(fill="< 2004") + ylab("Digital Song Sale Proportion") +
+  ggtitle("Distribution of Digital Song Sales between Old and New Holiday Music")    
+ggplotly(g)
+
+# streaming on demand sees an equal distribution of music from before and after 2004
+g = ggplot(data=album_list_df, aes(x=reorder(Artist,-Streaming.On.Demand.Audio...YTD/Albums.w.TEA.w.SEA.On.Demand.Audio...YTD),y=Streaming.On.Demand.Audio...YTD/Albums.w.TEA.w.SEA.On.Demand.Audio...YTD,fill=as.factor(before_2004))) + geom_col(position='dodge')  + xlab("Artists") + labs(fill="< 2004") + ylab("On Demand Streaming Proportion") + ggtitle("Distribution of On Demand Streaming between Old and New Holiday Music")    
+ggplotly(g)
+
+
+
+before_2004_means = colMeans(album_list_df[album_list_df$before_2004==1,c(7:12)],na.rm = T)
+after_2004_means = colMeans(album_list_df[album_list_df$before_2004==0,c(7:12)],na.rm = T)
+
+# differences between music from before and after 2004
+perc_difference_2004 = (after_2004_means-before_2004_means)/((before_2004_means+after_2004_means)/2) * 100 # percent difference
+perc_difference_2004
+perc_change_2004 = (after_2004_means-before_2004_means)/before_2004_means * 100 # percent change
+perc_change_2004
+```
+
+# t tests to test for significant difference in mean amongst music from before and after 2004
+```{r}
+t.test(album_list_df$Albums.w.TEA.w.SEA.On.Demand.Audio...YTD[which(album_list_df$before_2004==1)], mu = mean(album_list_df$Albums.w.TEA.w.SEA.On.Demand.Audio...YTD[which(album_list_df$before_2004==0)],na.rm=T))
+
+t.test(album_list_df$Digital.Albums.Sales...YTD[which(album_list_df$before_2004==1)], mu = mean(album_list_df$Digital.Albums.Sales...YTD[which(album_list_df$before_2004==0)],na.rm=T))
+
+t.test(album_list_df$Streaming.On.Demand.Audio...YTD[which(album_list_df$before_2004==1)], mu = mean(album_list_df$Streaming.On.Demand.Audio...YTD[which(album_list_df$before_2004==0)],na.rm=T))
+#older music is streamed more
+t.test(album_list_df$Physical.Albums.Sales...YTD[which(album_list_df$before_2004==1)], mu = mean(album_list_df$Physical.Albums.Sales...YTD[which(album_list_df$before_2004==0)],na.rm=T))
+
+t.test(album_list_df$Digital.Song.Sales...YTD[which(album_list_df$before_2004==1)], mu = mean(album_list_df$Digital.Song.Sales...YTD[which(album_list_df$before_2004==0)],na.rm=T))
+```
+
+# looking for any trends over the past 4 years 
+```{r,echo=T}
+%>% 
+g = ggplot(data=album_list_df, aes(x=reorder(Artist,-Physical.Albums.Sales...YTD/Albums.w.TEA.w.SEA.On.Demand.Audio...YTD),y=Physical.Albums.Sales...YTD/Albums.w.TEA.w.SEA.On.Demand.Audio...YTD,fill=as.factor(before_2004))) + geom_col(position='dodge') + facet_wrap(vars(holiday.year)) +xlab("Artists") +ylab("Physical Album Sale Proporition")+labs(fill="< 2004") +ggtitle("Distribution of Physical Album Sales between Old and New Holiday Music from 2015-2018")
+ggplotly(g)
+
+g = ggplot(data=album_list_df, aes(x=reorder(Artist,-Digital.Albums.Sales...YTD/Albums.w.TEA.w.SEA.On.Demand.Audio...YTD),y=Digital.Albums.Sales...YTD/Albums.w.TEA.w.SEA.On.Demand.Audio...YTD,fill=as.factor(before_2004))) + geom_col(position='dodge')  + facet_wrap(vars(holiday.year)) +xlab("Artists") +ylab("Digital Album Sale Proportion") +labs(fill="< 2004") +
+  ggtitle("Distribution of Digital Album Sales between Old and New Holiday Music from 2015-2018")  
+ggplotly(g)
+
+g = ggplot(data=album_list_df, aes(x=reorder(Artist,-Digital.Song.Sales...YTD/Albums.w.TEA.w.SEA.On.Demand.Audio...YTD),y=Digital.Song.Sales...YTD/Albums.w.TEA.w.SEA.On.Demand.Audio...YTD,fill=as.factor(before_2004))) + geom_col(position='dodge')  + facet_wrap(vars(holiday.year))  + xlab("Artists") +ylab("Digital Song Sale Proportion") +labs(fill="< 2004") +
+  ggtitle("Distribution of Digital Song Sales between Old and New Holiday Music from 2015-2018" )    
+ggplotly(g)
+
+# Albums from before 2004 are slightly streamed more, but streaming in general has increased the past few years
+g = ggplot(data=album_list_df, aes(x=reorder(Artist,-Streaming.On.Demand.Audio...YTD/Albums.w.TEA.w.SEA.On.Demand.Audio...YTD),y=Streaming.On.Demand.Audio...YTD/Albums.w.TEA.w.SEA.On.Demand.Audio...YTD,fill=as.factor(before_2004))) + geom_col(position='dodge')  + facet_wrap(vars(holiday.year))  + labs(fill="< 2004") +xlab("Artists") +ylab("On Demand Streaming Proportion")+
+  ggtitle("Distribution of On Demand Streaming between Old and New Holiday Music from 2015-2018")    
+ggplotly(g)
+
+```
+
+
+# What do holiday trends look like compared to the industry as a whole?
+```{r, echo=T}
+                          
+#divided by Albums.w.TEA.w.SEA.On.Demand to normalize the amounts in order to directly compare
+#this shows that more holiday albums are being sold in proportion to the amount of holiday albums existing vs other genres
+g = ggplot(data=daily_holiday_industry, aes(x=day,y=Total.Album.Sales/Albums.w.TEA.w.SEA.On.Demand,fill=as.factor(industry))) + geom_col(position='dodge') + facet_wrap(vars(year)) + ylab("Total Album Sale Proportion") + ggtitle("Proportion of Total Album Sales between Holiday and Other Genres") + labs(fill = "Genre")
+ggplotly(g) 
+
+#other genres of music have a higher rate of streaming during the holidays and slight increase in streaming volume
+g = ggplot(data=daily_holiday_industry, aes(x=day,y=Total.Streaming.On.Demand/Albums.w.TEA.w.SEA.On.Demand,fill=as.factor(industry))) + geom_col(position='dodge') + facet_wrap(vars(year)) + ylab("On Demand Streaming Proportion") + ggtitle("Proportion of On Demand Streaming Between Holiday and Other Genres") + labs(fill = "Genre")
+ggplotly(g)
+
+#other genres of music have a higher rate of streaming during the holidays
+g = ggplot(data=daily_holiday_industry, aes(x=day,y=Total.Streaming.On.Demand/Albums.w.TEA.w.SEA.On.Demand,fill=as.factor(industry))) + geom_col(position='dodge')  + ylab("On Demand Streaming Proportion") + ggtitle("Proportion of On Demand Streaming Between Holiday and Other Genres") + labs(fill = "Genre")
+ggplotly(g)
+
+#holiday music is physically purchased more often than other genres but have both been decreasing over the past 4 years
+g = ggplot(data=daily_holiday_industry, aes(x=day,y=Physical.Albums.Sales/Albums.w.TEA.w.SEA.On.Demand,fill=as.factor(industry))) + geom_col(position='dodge') + facet_wrap(vars(year))+ ylab("Physical Album Sales Proportion") + ggtitle("Proportion of Physical Album Sales Between Holiday and Other Genres") + labs(fill = "Genre")
+ggplotly(g)
+
+
+# on christmas day, other digital albums from other genres of music are purchased more, otherwise, digital holiday albums are purchased more
+## anomaly, why would other music be purchased more on christmas day, maybe because people have more disposable income on that day
+g = ggplot(data=daily_holiday_industry, aes(x=day,y=Digital.Albums.Sales/Albums.w.TEA.w.SEA.On.Demand,fill=as.factor(industry))) + geom_col(position='dodge') + facet_wrap(vars(year)) + ylab("Digital Album Sales Proportion") + ggtitle("Proportion of Digital Album Sales Between Holiday and Other Genres") + labs(fill = "Genre")
+ggplotly(g)
+
+
+#invdividual song sales are more prevalent in other genres but are both decreasing
+g = ggplot(data=daily_holiday_industry, aes(x=day,y=Digital.Song.Sales/Albums.w.TEA.w.SEA.On.Demand,fill=as.factor(industry))) + geom_col(position='dodge') + facet_wrap(vars(year))+ ylab("Digital Song Sale Proportion") + ggtitle("Proportion of Digital Song Sales Between Holiday and Other Genres") + labs(fill = "Genre")
+ggplotly(g)
+
+# there has been an increase in programmed streaming in the past 4 years.  Holiday music was streamed more frequently than other genres during the holiday season when controlled by the proportion of albums across different genres.
+g = ggplot(data=daily_holiday_industry, aes(x=day,y=Total.Streaming.Programmed/Albums.w.TEA.w.SEA.On.Demand,fill=as.factor(industry))) + geom_col(position='dodge') + facet_wrap(vars(year))+ ylab("Total Programmed Streaming Proportion") + ggtitle("Proportion of Total Programmed Streaming Between Holiday and Other Genres") + labs(fill = "Genre")
+ggplotly(g) 
+
+# when holiday music is being streamed on the radio, it is more listened to than other genres
+g = ggplot(data=daily_holiday_industry, aes(x=day,y=Airplay.Audience/Airplay.Spins,fill=as.factor(industry))) + geom_col(position='dodge') + facet_wrap(vars(year))+ ylab("Airplay Interaction Proportion") + ggtitle("Proportion of Airplay Interaction Between Holiday and Other Genres") + labs(fill = "Genre")
+ggplotly(g)
+
+ # when holiday music is being streamed on the radio, it is more listened to than other genres but there isn't a huge change in Airplay volume
+g = ggplot(data=daily_holiday_industry, aes(x=day,y=Airplay.Audience/Airplay.Spins,fill=as.factor(industry))) + geom_col(position='dodge') + ylab("Airplay Interaction Proportion") + ggtitle("Proportion of Airplay Interaction Between Holiday and Other Genres") + labs(fill = "Genre")
+ggplotly(g)
+```
+# differences in holiday and industry sale/stream volumes during Christmas week
+```{r,echo=T}
+holiday_means = colMeans(daily_holiday_industry[daily_holiday_industry$industry=="holiday",c(2:16)],na.rm = T)
+holiday_means_prop = holiday_means[c(2:13)]/holiday_means[1] #proportion to total equivalent album  consumption
+holiday_means_prop[13] = holiday_means[15]/holiday_means[14] #airplay interaction = audience/spin
+names(holiday_means_prop[13]) = "Airplay.Interaction"
+
+industry_means = colMeans(daily_holiday_industry[daily_holiday_industry$industry=="industry",c(2:16)],na.rm = T)
+industry_means_prop = industry_means[c(2:13)]/industry_means[1] #proportion to total equivalent album  consumption
+industry_means_prop[13] = industry_means[15]/industry_means[14] #airplay interaction = audience/spin
+
+#percent difference between holiday 
+holiday_industry_perc_diff = ((holiday_means_prop-industry_means_prop)/((industry_means_prop+holiday_means_prop)/2)) * 100
+holiday_industry_perc_diff
+```
+
+```{r,echo=T}
+#when controlled for different proportions of music published, holiday albums are overtake the sales of other genres around week 28 plus or minus 3 weeks 
+g = ggplot(data=weekly_holiday_industry, aes(x=as.factor(week),y=Total.Album.Sales/Albums.w.TEA.w.SEA.On.Demand,fill=as.factor(industry))) + geom_col(position='dodge') + facet_wrap(vars(year))+ xlab("Weeks") + ylab("Total Album Sale Proportion") + ggtitle("Proportion of Total Album Sales Between Holiday and Other Genres") + labs(fill = "Genre")
+ggplotly(g)
+
+
+# on average, other genres of music are streamed more than holiday music.  Holiday music streaming begins decreasing around 35 plus or minus 3 weeks which is around late August
+g = ggplot(data=weekly_holiday_industry, aes(x=as.factor(week),y=Total.Streaming.On.Demand/Albums.w.TEA.w.SEA.On.Demand,fill=as.factor(industry))) + geom_col(position='dodge') + facet_wrap(vars(year))+ xlab("Weeks") + ylab("Total On Demand Streaming Proportion") + ggtitle("Proportion of On Demand Streaming Between Holiday and Other Genres") + labs(fill = "Genre")
+ggplotly(g)
+
+
+# holiday physical album sales hit a minimum around week 20, which is June.  holiday physical album sales hit its max at week 40, which is in november
+g = ggplot(data=weekly_holiday_industry, aes(x=as.factor(week),y=Physical.Albums.Sales/Albums.w.TEA.w.SEA.On.Demand,fill=as.factor(industry))) + geom_col(position='dodge') + facet_wrap(vars(year)) + xlab("Weeks") + ylab("PHysical Album Sale Proportion") + ggtitle("Proportion of Physical Album Sales Between Holiday and Other Genres") + labs(fill = "Genre")
+ggplotly(g)
+
+# peak of holiday digital album sales occurs around week 43 which is mid october
+g = ggplot(data=weekly_holiday_industry, aes(x=as.factor(week),y=Digital.Albums.Sales/Albums.w.TEA.w.SEA.On.Demand,fill=as.factor(industry))) + geom_col(position='dodge') + facet_wrap(vars(year))+ xlab("Weeks") + ylab("Digital Album Sale Proportion") + ggtitle("Proportion of Digital Album Sales Between Holiday and Other Genres") + labs(fill = "Genre")
+ggplotly(g)
+
+
+# There is an overall decline in individual digital song sales across the years. Holiday digital song sales trends follows streaming on demand patterns
+g = ggplot(data=weekly_holiday_industry, aes(x=as.factor(week),y=Digital.Song.Sales/Albums.w.TEA.w.SEA.On.Demand,fill=as.factor(industry))) + geom_col(position='dodge') + facet_wrap(vars(year))+ xlab("Weeks") + ylab("Digital Song Sale Proportion") + ggtitle("Proportion of Digital Song Sales Between Holiday and Other Genres") + labs(fill = "Genre")
+ggplotly(g)
+
+
+# there has been an increase in streaming programmed music over the years with similar distributions of music streamed across different genres
+g = ggplot(data=weekly_holiday_industry, aes(x=as.factor(week),y=Total.Streaming.Programmed/Albums.w.TEA.w.SEA.On.Demand,fill=as.factor(industry))) + geom_col(position='dodge') + facet_wrap(vars(year)) + xlab("Weeks") + ylab("Total Programmed Streaming Proportion") + ggtitle("Proportion of Total Programmed Streaming Between Holiday and Other Genres") + labs(fill = "Genre")
+ggplotly(g)
+
+
+# we notice that around the holiday season, holiday music is listened to than other genres
+## anamoly, in june on week 26, there is a random spike that occurs
+g = ggplot(data=weekly_holiday_industry, aes(x=as.factor(week),y=Airplay.Audience/Airplay.Spins,fill=as.factor(industry))) + geom_col(position='dodge') + facet_wrap(vars(year))  + xlab("Weeks") + ylab("Airplay Interaction Proportion") + ggtitle("Airplay Interaction Between Holiday and Other Genres") + labs(fill = "Genre")
+ggplotly(g)
+
+```
+
+
+# What (if anything) could be driving that trend?
+there are  higher counts in streaming than digital or physical sales across the years. This makes sense as more people switch to streaming methods.  Recently iTunes has closed meaning that Apple product people users are more likely to stream.  There is probably a reluctancy for people to buy digitally on other platforms due to the continued decrease in non streaming sales.
+# What do you expect holiday music in 2020 to look like ? What do you expect it to look like in 2021?
+-what artists, albums, record labels do well 
+# Are there any anomalies in the data?
+anamoly, in june on week 26, there is a random spike that occurs
+
+In the data, old artists have current release years which throws off visualizations 
+```{r,echo=T}
+
+# we notice that around the holiday season, holiday music is listened to than other genres
+## anamoly, in june on week 26, there is a random spike that occurs
+g = ggplot(data=weekly_holiday_industry, aes(x=as.factor(week),y=Airplay.Audience/Airplay.Spins,fill=as.factor(industry))) + geom_col(position='dodge') + facet_wrap(vars(year))  + xlab("Weeks") + ylab("Airplay Interaction Proportion") + ggtitle("Airplay Interaction Between Holiday and Other Genres") + labs(fill = "Genre")
+ggplotly(g)
+
+
+# on christmas day, other digital albums from other genres of music are purchased more, otherwise, digital holiday albums are purchased more
+## anomaly, why would other music be purchased more on christmas day, maybe because people have more disposable income on that day
+g = ggplot(data=daily_holiday_industry, aes(x=day,y=Digital.Albums.Sales/Albums.w.TEA.w.SEA.On.Demand,fill=as.factor(industry))) + geom_col(position='dodge') + facet_wrap(vars(year)) + ylab("Digital Album Sales Proportion") + ggtitle("Proportion of Digital Album Sales Between Holiday and Other Genres") + labs(fill = "Genre")
+ggplotly(g)
+
+```
+
+# highlights
+```{r,echo=T}
+# album_list data (total album equivalent consumption audio, album sales, physical album sales, digital album sales, digital song sales, streaming )
+album_highlight_2015 = colMeans(album_list_2015[,c(7:12)],na.rm = T)
+album_highlight_2016 = colMeans(album_list_2016[,c(7:12)],na.rm = T)
+album_highlight_2017 = colMeans(album_list_2017[,c(7:12)],na.rm = T)
+album_highlight_2018 = colMeans(album_list_2018[,c(7:12)],na.rm = T)
+
+album_highlight_change = ((album_highlight_2018-album_highlight_2015)/album_highlight_2015)*100 # in percent
+
+# daily holiday highlight on
+# "Albums.w.TEA.w.SEA.On.Demand, "Albums.w.TEA.w.SEA.On.Demand.Audio" "Albums.w..TEA" ,"Total.Album.Sales", "Physical.Albums.Sales","Digital.Albums.Sales"               "Digital.Song.Sales","Total.Streaming.On.Demand", "Streaming.On.Demand.Audio","Streaming.On.Demand.Video","Total.Streaming.Programmed","Streaming.Programmed.Audio"         "Streaming.Programmed.Video"         "Airplay.Spins"  "Airplay.Audience"                    
+
+daily_holiday_highlight_2016 = colMeans(daily_holiday_2016[,c(2:16)],na.rm = T)
+daily_holiday_highlight_2017 = colMeans(daily_holiday_2017[,c(2:16)],na.rm = T)
+daily_holiday_highlight_2018 = colMeans(daily_holiday_2018[,c(2:16)],na.rm = T)
+daily_holiday_highlight_2019 = colMeans(daily_holiday_2019[,c(2:16)],na.rm = T)
+
+daily_holiday_highlight_change = ((daily_holiday_highlight_2019-daily_holiday_highlight_2016)/daily_holiday_highlight_2016)*100
+
+# daily industry highlight 
+daily_industry_highlight_2016 = colMeans(daily_industry_2016[,c(2:16)],na.rm = T)
+daily_industry_highlight_2017 = colMeans(daily_industry_2017[,c(2:16)],na.rm = T)
+daily_industry_highlight_2018 = colMeans(daily_industry_2018[,c(2:16)],na.rm = T)
+daily_industry_highlight_2019 = colMeans(daily_industry_2019[,c(2:16)],na.rm = T)
+
+daily_industry_highlight_change = ((daily_industry_highlight_2019-daily_industry_highlight_2016)/daily_industry_highlight_2016)*100
+
+# weekly holiday highlight
+weekly_holiday_highlight_2015 = colMeans(weekly_holiday_2015[,c(2:16)],na.rm = T)
+weekly_holiday_highlight_2016 = colMeans(weekly_holiday_2016[,c(2:16)],na.rm = T)
+weekly_holiday_highlight_2017 = colMeans(weekly_holiday_2017[,c(2:16)],na.rm = T)
+weekly_holiday_highlight_2018 = colMeans(weekly_holiday_2018[,c(2:16)],na.rm = T)
+weekly_holiday_highlight_2019 = colMeans(weekly_holiday_2019[,c(2:16)],na.rm = T)
+
+weekly_holiday_highlight_change = ((weekly_holiday_highlight_2019-weekly_holiday_highlight_2015)/weekly_holiday_highlight_2015) * 100
+
+# weekly industry highlight
+weekly_industry_highlight_2015 = colMeans(weekly_industry_2015[,c(2:16)],na.rm = T)
+weekly_industry_highlight_2016 = colMeans(weekly_industry_2016[,c(2:16)],na.rm = T)
+weekly_industry_highlight_2017 = colMeans(weekly_industry_2017[,c(2:16)],na.rm = T)
+weekly_industry_highlight_2018 = colMeans(weekly_industry_2018[,c(2:16)],na.rm = T)
+weekly_industry_highlight_2019 = colMeans(weekly_industry_2019[,c(2:16)],na.rm = T)
+
+weekly_industry_highlight_change = ((weekly_industry_highlight_2019-weekly_industry_highlight_2015)/weekly_industry_highlight_2015) * 100
+
+# song list ytd audio 
+song_list_2016_audio = mean(song_list_2016$YTD.Audio)
+song_list_2019_audio = mean(song_list_2019$YTD.Audio)
+
+song_list_audio_change = ((song_list_2019_audio-song_list_2016_audio)/song_list_2016_audio) * 100
+```
+
+# Reflections
+
+- With this presentation, I drew upon my programming and statistical skills to produce visualizations, tables, and feature engineering 
+- Would have liked to make this report more succinct, but felt like what I had reported were significant and proportionate to the amount of data sets provided
+- Would love to have an opportunity to have more freedom with my findings and deploy statistical models to make predictions
+- The reasoning for not using any forecasting models was due to lack of data and amount of uncertainty due to the current climate
+
